@@ -23,7 +23,11 @@ public class Main {
 
             rotations_list_method2(connection, "33", "53");
 
-            statistics_calc(connection, "Rotationen", "v_rot (rot/s)");
+            all_statistics_calc(connection, "Rotationen", "v_rot (rot/s)");
+
+            average_statistics_rotation(connection, "Rotationen", "v_rot (rot/s)");
+
+            power_statistics(connection, "Leistung", "Leistung(MW)");
 
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -164,7 +168,7 @@ public class Main {
         System.out.println("Rotations values from time step " + start + " - " + end + " : " + rotValues);
     }
 
-    public static void statistics_calc(Connection connection, String tableName, String columnName) throws SQLException {
+    private static void all_statistics_calc(Connection connection, String tableName, String columnName) throws SQLException {
         ArrayList<Double> values = getColumnValues(connection, tableName, columnName);
         Statistics stats = new Statistics(values);
 
@@ -183,6 +187,27 @@ public class Main {
 
         double maximum = stats.findMin();
         System.out.println("Maximum value: " + maximum);
+    }
+
+    private static void average_statistics_rotation(Connection connection, String tableName, String columnName) throws SQLException {
+        ArrayList<Double> values = getColumnValues(connection, tableName, columnName);
+        Statistics stats = new Statistics(values);
+
+        System.out.println("\n THIS ARE THE AVERAGE FOR TABLE: " + tableName + " AND COLUMN " + columnName);
+        double mean = stats.calculateMean();
+        System.out.println("Mean: " + mean);
+    }
+
+    private static void power_statistics(Connection connection, String tableName, String columnName) throws SQLException {
+        ArrayList<Double> values = getColumnValues(connection, tableName, columnName);
+        Statistics stats = new Statistics(values);
+
+        System.out.println("\n THIS ARE THE STATISTICS FOR TABLE: " + tableName + " AND COLUMN " + columnName);
+        double variance = stats.calculateVariance();
+        System.out.println("Variance: " + variance);
+
+        double standardDeviation = stats.calculateStandardDeviation();
+        System.out.println("Standard Deviation: " + standardDeviation);
     }
 
     private static ArrayList<Double> getColumnValues(Connection connection, String tableName, String columnName) throws SQLException {
