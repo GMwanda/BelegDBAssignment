@@ -1,4 +1,5 @@
 import java.sql.*;
+import java.util.ArrayList;
 
 
 public class Main {
@@ -8,15 +9,19 @@ public class Main {
 
         try (Connection connection = DriverManager.getConnection(databaseURL)) {
 
-//            Measurement range of sensor ACC2:
             measurement_range(connection);
 
-//            At which time step does the sensor with SensorID 3 reach its maximum or minimum acceleration?
             sensor_max_min(connection);
 
-//            At how many rotations per second is the max or min power output achieved
             rotations_per_second(connection);
 
+            acc_acc1_method1(connection);
+
+            acc_acc1_method2(connection, "00:00:21", 15);
+
+            rotations_list_method1(connection);
+
+            rotations_list_method2(connection, "33", "53");
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -72,6 +77,88 @@ public class Main {
             double rot_value = result5.getDouble("v_rot (rot/s)");
             System.out.println("Rotations per second at maximum power output: " + rot_value);
         }
+    }
+
+    private static void acc_acc1_method1(Connection connection) throws SQLException {
+        String query = "SELECT `ACC1 (m/s²)` FROM Beschleunigung WHERE Zeit>= ? AND Zeit<?";
+        PreparedStatement preStatement = connection.prepareStatement(query);
+        preStatement.setString(1, "00:00:21");
+        preStatement.setString(2, "00:00:36");
+
+        ResultSet result6 = preStatement.executeQuery();
+
+        ArrayList<Double> accValues = new ArrayList<>();
+        while (result6.next()) {
+            accValues.add(result6.getDouble("ACC1 (m/s²)"));
+        }
+        System.out.println("Acceleration Method 1::");
+        System.out.println("Acceleration values for 15 seconds from timestamp 00:00:21 : " + accValues);
+    }
+
+    private static void acc_acc1_method2(Connection connection, String startTime, int duration) throws SQLException {
+        String query = "SELECT `ACC1 (m/s²)` FROM Beschleunigung WHERE Zeit>= ? AND Zeit<?";
+        PreparedStatement preStatement = connection.prepareStatement(query);
+        preStatement.setString(1, startTime);
+        preStatement.setString(2, incrementTime(startTime, duration));
+        ResultSet result7 = preStatement.executeQuery();
+
+
+        ArrayList<Double> accValues = new ArrayList<>();
+        while (result7.next()) {
+            accValues.add(result7.getDouble("ACC1 (m/s²)"));
+        }
+        System.out.println("Acceleration Method 2::");
+        System.out.println("Acceleration values for 15 seconds from timestamp 00:00:21 : " + accValues);
+    }
+
+    private static String incrementTime(String startTime, int duration) {
+        String[] parts = startTime.split(":");
+        int hours = Integer.parseInt(parts[0]);
+        int minutes = Integer.parseInt(parts[1]);
+        int secs = Integer.parseInt(parts[2]);
+
+        secs += duration;
+        minutes += secs / 60;
+        secs %= 60;
+        hours += minutes / 60;
+        minutes %= 60;
+
+        return String.format("%02d:%02d:%02d", hours, minutes, secs);
+    }
+
+    private static void rotations_list_method1(Connection connection) throws SQLException {
+        String query = "SELECT `v_rot (rot/s)` FROM Rotationen WHERE Zeitschritt>=? AND Zeitschritt<?";
+        PreparedStatement preparedStatement = connection.prepareStatement(query);
+        preparedStatement.setString(1, "33");
+        preparedStatement.setString(2, "53");
+
+        ResultSet result8 = preparedStatement.executeQuery();
+
+        ArrayList<Double> rotationValues = new ArrayList<>();
+
+        while (result8.next()) {
+            rotationValues.add(result8.getDouble("v_rot (rot/s)"));
+        }
+        System.out.println("Rotations Method 1::");
+        System.out.println("Rotations values from time step 33 - 52 : " + rotationValues);
+
+    }
+
+    private static void rotations_list_method2(Connection connection, String start, String end) throws SQLException {
+        String query = "SELECT `v_rot (rot/s)` FROM Rotationen WHERE Zeitschritt>=? AND Zeitschritt<?";
+        PreparedStatement preparedStatement = connection.prepareStatement(query);
+        preparedStatement.setString(1, start);
+        preparedStatement.setString(2, end);
+        ResultSet result9 = preparedStatement.executeQuery();
+
+        ArrayList<Double> rotValues = new ArrayList<>();
+
+        while (result9.next()) {
+            rotValues.add(result9.getDouble("v_rot (rot/s)"));
+        }
+
+        System.out.println("Rotations Method 2::");
+        System.out.println("Rotations values from time step " + start + " - " + end + " : " + rotValues);
     }
 
 }
