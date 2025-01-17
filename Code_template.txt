@@ -1,0 +1,78 @@
+import java.sql.*;
+import java.util.ArrayList;
+
+// Es können weitere Klassen verwendet werden
+
+public class Main {
+
+	public static void main(String[] args) {
+		
+            // Verbindung mit der Datenbank
+
+		String databaseURL = "jdbc:ucanaccess://C:\\Users\\Username\\BelegDB.accdb";
+
+		try (Connection connection = DriverManager.getConnection(databaseURL)) {
+
+	    // Formulierung der SQL-Abfragen
+
+			String sql_1 = "SELECT ...";  // Erste SQL-Abfrage einfügen
+			String sql_2 = "SELECT ...";  // Zweite SQL-Abfrage einfügen
+			...
+			
+			Statement statement = connection.createStatement();
+            		ResultSet result = statement.executeQuery(sql_1); // Ergebnis der ersten SQL-Abfrage
+			...
+            
+	    // Erstellung von Listen, Berechnung von Werten usw.
+
+	    ... 
+          
+	    // Ausgabe der berechneten Werte
+
+            System.out.println("Aufg.1 a) " + ANTWORT);    // Ausgabe der Lösung
+	    System.out.println("Aufg.1 b) " + ANTWORT);	   // Ausgabe der Lösung	
+	    ...
+            
+	    // Informationen zu Zugriffsfehlern
+
+		} catch (SQLException ex) {
+            ex.printStackTrace();  		 
+		}
+	}
+
+}
+
+
+____________________________________________________________________
+____________________________________________________________________
+____________________________________________________________________
+
+import java.util.ArrayList;
+
+// Es können weitere Klassen verwendet werden
+
+public class Statistics {
+    private ArrayList<Double> values;
+    private int length;
+    ...
+
+    public Statistics(ArrayList<Double> values) {
+        this.values = new ArrayList<>(values); 
+        this.length = this.values.size();
+	...
+    }
+
+    public double calculateMean() {}
+
+    public double calculateVariance() {}
+
+    public double calculateStandardDeviation() {}
+
+    public double findMin() {}
+
+    public double findMax() {}
+   
+		
+
+    }
+}
