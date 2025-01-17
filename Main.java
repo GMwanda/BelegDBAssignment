@@ -22,6 +22,9 @@ public class Main {
             rotations_list_method1(connection);
 
             rotations_list_method2(connection, "33", "53");
+
+            statistics_calc(connection, "Rotationen", "v_rot (rot/s)");
+
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -159,6 +162,39 @@ public class Main {
 
         System.out.println("Rotations Method 2::");
         System.out.println("Rotations values from time step " + start + " - " + end + " : " + rotValues);
+    }
+
+    public static void statistics_calc(Connection connection, String tableName, String columnName) throws SQLException {
+        ArrayList<Double> values = getColumnValues(connection, tableName, columnName);
+        Statistics stats = new Statistics(values);
+
+        System.out.println("\n THIS ARE THE STATISTICS FOR TABLE: " + tableName + " AND COLUMN " + columnName);
+        double mean = stats.calculateMean();
+        System.out.println("Mean: " + mean);
+
+        double variance = stats.calculateVariance();
+        System.out.println("Variance: " + variance);
+
+        double standardDeviation = stats.calculateStandardDeviation();
+        System.out.println("Standard Deviation: " + standardDeviation);
+
+        double minimum = stats.findMin();
+        System.out.println("Minimum value: " + minimum);
+
+        double maximum = stats.findMin();
+        System.out.println("Maximum value: " + maximum);
+    }
+
+    private static ArrayList<Double> getColumnValues(Connection connection, String tableName, String columnName) throws SQLException {
+        String sql = "SELECT `" + columnName + "` FROM " + tableName;
+        Statement statement = connection.createStatement();
+        ResultSet result = statement.executeQuery(sql);
+
+        ArrayList<Double> values = new ArrayList<>();
+        while (result.next()) {
+            values.add(result.getDouble(columnName));
+        }
+        return values;
     }
 
 }
