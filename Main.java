@@ -5,7 +5,7 @@ import java.util.ArrayList;
 public class Main {
 
     public static void main(String[] args) {
-        String databaseURL = "jdbc:ucanaccess://D:\\BelegDB (1)\\BelegDB.accdb";
+        String databaseURL = "jdbc:ucanaccess://C:\\Users\\gjmwa\\IdeaProjects\\BelegDBAssignment\\BelegDB.accdb";
 
         try (Connection connection = DriverManager.getConnection(databaseURL)) {
 
@@ -28,6 +28,8 @@ public class Main {
             average_statistics_rotation(connection, "Rotationen", "v_rot (rot/s)");
 
             power_statistics(connection, "Leistung", "Leistung(MW)");
+
+            q5(databaseURL);
 
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -222,5 +224,74 @@ public class Main {
         return values;
     }
 
+    private static void q5(String databaseURL) {
+        try (Connection connection = DriverManager.getConnection(databaseURL)) {
+            // Get measurement ranges
+            String rangeQuery = "SELECT MIN(`ACC1 (m/s²)`) AS Min_ACC1, MAX(`ACC1 (m/s²)`) AS Max_ACC1, " +
+                    "MIN(`ACC2 (m/s²)`) AS Min_ACC2, MAX(`ACC2 (m/s²)`) AS Max_ACC2, " +
+                    "MIN(`ACC3 (m/s²)`) AS Min_ACC3, MAX(`ACC3 (m/s²)`) AS Max_ACC3 " +
+                    "FROM Beschleunigung";
+
+            double minACC1, maxACC1, minACC2, maxACC2, minACC3, maxACC3;
+
+            try (Statement statement = connection.createStatement();
+                 ResultSet result = statement.executeQuery(rangeQuery)) {
+                if (result.next()) {
+                    minACC1 = result.getDouble("Min_ACC1");
+                    maxACC1 = result.getDouble("Max_ACC1");
+                    minACC2 = result.getDouble("Min_ACC2");
+                    maxACC2 = result.getDouble("Max_ACC2");
+                    minACC3 = result.getDouble("Min_ACC3");
+                    maxACC3 = result.getDouble("Max_ACC3");
+                } else {
+                    throw new RuntimeException("Failed to fetch measurement ranges.");
+                }
+            }
+
+            // Query all data for analysis
+            String dataQuery = "SELECT Zeitschritt, `ACC1 (m/s²)`, `ACC2 (m/s²)`, `ACC3 (m/s²)` FROM Beschleunigung";
+            try (Statement statement = connection.createStatement();
+                 ResultSet resultSet = statement.executeQuery(dataQuery)) {
+
+                double minDistance = Double.MAX_VALUE;
+                double maxDistance = Double.MIN_VALUE;
+                int closestTimeStep = -1;
+                int furthestTimeStep = -1;
+
+                while (resultSet.next()) {
+                    int timeStep = resultSet.getInt("Zeitschritt");
+                    double acc1 = resultSet.getDouble("ACC1 (m/s²)");
+                    double acc2 = resultSet.getDouble("ACC2 (m/s²)");
+                    double acc3 = resultSet.getDouble("ACC3 (m/s²)");
+
+                    // Calculate distances from limits
+                    double dist1 = Math.min(Math.abs(acc1 - minACC1), Math.abs(acc1 - maxACC1));
+                    double dist2 = Math.min(Math.abs(acc2 - minACC2), Math.abs(acc2 - maxACC2));
+                    double dist3 = Math.min(Math.abs(acc3 - minACC3), Math.abs(acc3 - maxACC3));
+
+                    double totalDistance = dist1 + dist2 + dist3;
+
+                    if (totalDistance < minDistance) {
+                        minDistance = totalDistance;
+                        closestTimeStep = timeStep;
+                    }
+
+                    if (totalDistance > maxDistance) {
+                        maxDistance = totalDistance;
+                        furthestTimeStep = timeStep;
+                    }
+                }
+
+                System.out.println("Closest time step: " + closestTimeStep + " with total distance: " + minDistance);
+                System.out.println("Furthest time step: " + furthestTimeStep + " with total distance: " + maxDistance);
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
 }
+
+
+
 
